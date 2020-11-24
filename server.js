@@ -59,7 +59,7 @@ require("./routes/api/upvotes.js")(app);
 require("./routes/api/users.js")(app);
 
 // Server static assets if in production
-if (process.env.ENVIRONMENT === "production") {
+if (env === "production") {
   // Set static folder
   app.use(express.static("client/build"));
 
