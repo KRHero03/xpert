@@ -71,12 +71,6 @@ class Footer extends React.Component {
 
   render() {
 
-    const toggleDrawer = () => {
-      this.setState({
-        ...this.state,
-        leftDrawer: !this.state.leftDrawer
-      })
-    };
 
     const handlePolicyModal = () => {
       this.setState({

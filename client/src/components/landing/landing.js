@@ -5,10 +5,8 @@ import { setCurrentUser } from "../../actions/authActions";
 import { withStyles } from '@material-ui/core/styles';
 import Proptypes from 'prop-types';
 import Button from "@material-ui/core/Button";
-import Divider from "@material-ui/core/Divider";
 import Link from "@material-ui/core/Link";
 import Grid from "@material-ui/core/Grid";
-import { Typography } from "@material-ui/core";
 import Logo from "../../logo.svg";
 import { Parallax } from 'react-parallax';
 import ReadBG from "../../assets/images/read.jpg";
@@ -134,7 +132,7 @@ class Landing extends React.Component {
         <Grid container >
           <Grid item xs={12}>
             <div className={classes.firstgrid}>
-              <img className={classes.Logo} src={Logo} />
+              <img alt="XPert Logo" className={classes.Logo} src={Logo} />
               <div>XPert</div>
               <div style={{fontSize: 30}}>Ocean of Thoughts</div>
             </div>
@@ -147,14 +145,21 @@ class Landing extends React.Component {
                 </Button>
             </Grid>
             <Grid item>
-              <Button color="primary" >
+              <Button color="primary" href='/ourstory' >
                 Our Story
                 </Button>
             </Grid>
             <Grid item>
-              <Button component="a" href='/auth/google' variant="contained" color="primary" disableElevation>
+              {this.state.isAuthenticated?
+              (
+                null
+              ):
+              (
+
+                <Button component="a" href='/auth/google' variant="contained" color="primary" disableElevation>
                 Get Started
                 </Button>
+              )}
             </Grid>
           </Grid>
           <Grid item xs={12}>
