@@ -13,5 +13,4 @@ module.exports = app => {
             res.send({})
         }
     })
-
 }

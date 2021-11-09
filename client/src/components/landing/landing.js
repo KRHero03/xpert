@@ -150,12 +150,7 @@ class Landing extends React.Component {
                 </Button>
             </Grid>
             <Grid item>
-              {this.state.isAuthenticated?
-              (
-                null
-              ):
-              (
-
+              {this.state.isAuthenticated? (null): (
                 <Button component="a" href='/auth/google' variant="contained" color="primary" disableElevation>
                 Get Started
                 </Button>
@@ -255,7 +250,6 @@ class Landing extends React.Component {
               <div className={classes.parallaxgap} style={{fontSize: 18}}><div> •&nbsp;
                 {this.state.tags.map((tag, idx) => (
                   <here><Link className={classes.link} href={"/tags/"+tag._id}>{tag.name.toUpperCase()}</Link> • </here>
-                  
                 ))}
               </div></div>
             </Grid>

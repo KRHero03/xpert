@@ -2,7 +2,6 @@ import React from "react";
 import { connect } from "react-redux";
 import { withStyles } from '@material-ui/core/styles';
 import Proptypes from 'prop-types';
-import axios from 'axios';
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
@@ -23,6 +22,7 @@ import { setCurrentUser } from "../../actions/authActions";
 import { TextField } from "@material-ui/core";
 import ReactMarkdown from 'react-markdown';
 import gfm from 'remark-gfm';
+import {getEditStory, setEditStory} from "../../services/api";
 
 
 const styles = (theme) => ({
@@ -201,9 +201,9 @@ const styles = (theme) => ({
     bottom: theme.spacing(2),
     right: theme.spacing(2),
     color: 'white',
-    backgroundColor: theme.palette.primary.main,  
+    backgroundColor: theme.palette.primary.main,
     '&:hover':{
-      backgroundColor: theme.palette.secondary.main,  
+      backgroundColor: theme.palette.secondary.main,
 
     }
   },
@@ -232,6 +232,7 @@ class EditStory extends React.Component {
   }
   async componentDidMount() {
     await this.props.setCurrentUser();
+
     this.setState({
       user: this.props.auth.user,
       isAuthenticated: this.props.auth.isAuthenticated
@@ -241,20 +242,20 @@ class EditStory extends React.Component {
     }
 
 
-    const response = await axios.post('/api/get_edit_story/',{'storyID':this.state.storyID})
+    const data = await getEditStory(this.state.storyID);
 
-    if(Object.keys(response.data).length==0){
+    if(Object.keys(data).length==0){
       this.props.history.push('/yourstories/')
       return
     }
-    
+
     this.setState({
       isLoading:false,
-      title: response.data.title,
-      content: response.data.content,
-      description: response.data.description,
-      tags: response.data.tags,
-      tagString : response.data.tags.join(' '),
+      title: data.title,
+      content: data.content,
+      description: data.description,
+      tags: data.tags,
+      tagString : data.tags.join(' '),
     })
 
   }
@@ -285,7 +286,6 @@ class EditStory extends React.Component {
         tags: tagString.length > 0 ? tagData : [],
         tagString: tagString
       })
-
     }
 
     const handleHelpDialog = (event, reason) => {
@@ -319,24 +319,16 @@ class EditStory extends React.Component {
       this.setState({
         isEditStoryClicked: true
       })
-      const storyResponse = await axios.post('/api/edit_story', {
-        'storyID': this.state.storyID,
-        'title': this.state.title,
-        'description': this.state.description,
-        'content': this.state.content,
-        'tags': this.state.tags
-      })
 
+      const data = await setEditStory(this.state.storyID, this.state.title, this.state.description, this.state.content, this.state.tags);
       this.setState({
         isEditStoryClicked: false
       })
-      if (storyResponse.data.error !== undefined) {
-        showMessage(storyResponse.data.error)
+      if (data.error !== undefined) {
+        showMessage(data.error)
         return
       }
-      this.props.history.push('/story/' + storyResponse.data.id)
-
-      
+      this.props.history.push('/story/' + data.id)
     }
     return (
       <div>
@@ -362,6 +354,7 @@ class EditStory extends React.Component {
                       margin="dense"
                       id="titleTextField"
                       label="Title"
+                      InputProps={{"data-testid":"title"}}
                       value={this.state.title}
                       onChange={handleTitle}
                       type="text"
@@ -376,6 +369,7 @@ class EditStory extends React.Component {
                       margin="dense"
                       id="descriptionTextField"
                       label="Description"
+                      InputProps={{"data-testid":"description"}}
                       value={this.state.description}
                       onChange={handleDescription}
                       type="text"
@@ -391,6 +385,7 @@ class EditStory extends React.Component {
                       margin="dense"
                       id="contentTextField"
                       label="Content"
+                      InputProps={{"data-testid":"content"}}
                       value={this.state.content}
                       onChange={handleContent}
                       type="text"
@@ -406,6 +401,7 @@ class EditStory extends React.Component {
                       margin="dense"
                       id="tagTextField"
                       label="Tags"
+                      InputProps={{"data-testid":"tags"}}
                       value={this.state.tagString}
                       onChange={handleTags}
                       type="text"
@@ -447,7 +443,7 @@ class EditStory extends React.Component {
                     <CircularProgress />
                   ) : (
 
-                      <Button style={{ width: '100%', marginBottom: 30, marginTop: 30 }} onClick={editStory} color="primary" variant="contained">
+                      <Button style={{ width: '100%', marginBottom: 30, marginTop: 30 }} onClick={editStory} color="primary" variant="contained" data-testid={'edit-story-button'}>
                         EDIT STORY
                       </Button>
                     )}
@@ -489,8 +485,6 @@ class EditStory extends React.Component {
                                 </Typography>
                 </DialogContent>
               </Dialog>
-            
-            
 
             </Container>
           )}

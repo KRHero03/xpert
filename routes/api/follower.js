@@ -1,8 +1,4 @@
 const express = require("express");
-const app = express();
-const tags = require("../../models/tags");
-const stories = require("../../models/stories");
-const comments = require("../../models/comments");
 const followerModel = require("../../models/followers");
 const users = require("../../models/user");
 module.exports = app => {
@@ -16,7 +12,6 @@ module.exports = app => {
                 const userResponse = await users.findOne({ _id: obj.userID1 })
                 followers.push(userResponse)
             }))
-
             res.send(followers)
         }catch(e){
             console.log(e)

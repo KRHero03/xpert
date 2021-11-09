@@ -1,6 +1,4 @@
 import React from "react";
-import axios from 'axios';
-import { useSnackbar } from 'notistack';
 import { connect } from "react-redux";
 import { withStyles } from '@material-ui/core/styles';
 import Proptypes from 'prop-types';
@@ -12,8 +10,7 @@ import Divider from "@material-ui/core/Divider";
 import Card from "@material-ui/core/Card";
 import Link from "@material-ui/core/Link";
 import LinearProgress from "@material-ui/core/LinearProgress";
-import SearchIcon from '@material-ui/icons/Search';
-import InputBase from '@material-ui/core/InputBase';
+import {getFollowers, getFollowing} from '../../services/api'
 
 import { setCurrentUser } from "../../actions/authActions";
 import { TextField } from "@material-ui/core";
@@ -178,11 +175,9 @@ class Connections extends React.Component {
             isAuthenticated: this.props.auth.isAuthenticated
         })
         if (!(this.state.isAuthenticated)) {
-
             this.props.history.push('/')
         }
-        const followerResponse = await axios.post('/api/follower', { "userID": this.state.user._id })
-        const followerData = followerResponse.data
+        const followerData = await getFollowers(this.state.user._id);
 
         followerData.sort((a, b) => {
             return a.name < b.name
@@ -191,8 +186,7 @@ class Connections extends React.Component {
             followers: followerData
         })
 
-        const followingResponse = await axios.post('/api/following', { "userID": this.state.user._id })
-        const followingData = followingResponse.data
+        const followingData = await getFollowing(this.state.user._id);
 
         followingData.sort((a, b) => {
             return a.name < b.name
@@ -220,7 +214,6 @@ class Connections extends React.Component {
             })
         }
 
-
         const handleSearchFollowing = (e) => {
             const searchString = e.target.value.toLowerCase()
             this.setState({
@@ -230,57 +223,57 @@ class Connections extends React.Component {
                 displayFollowing:searchString.length==0?this.state.following: this.state.following.filter((e)=> {return e.name.toLowerCase().includes(searchString)})
             })
         }
+
         return (<div>
-            {this.state.isLoading ?
-                (
-                    <Container className={classes.base}>
-                        <LinearProgress />
-                    </Container>
-                ) :
-                (
-                    <Container className={classes.base}>
+                {this.state.isLoading ?
+                    (
+                        <Container className={classes.base}>
+                            <LinearProgress />
+                        </Container>
+                    ) :
+                    (
+                        <Container className={classes.base}>
 
-                        <Grid container xs={12} className={classes.title} justify='space-between'>
-                            <Grid item xs={12} sm={4}>
-                                {"Followers (" + this.state.followers.length + ")"}
+                            <Grid container className={classes.title} justify='space-between'>
+                                <Grid item xs={12} sm={4}>
+                                    {"Followers (" + this.state.followers.length + ")"}
+                                </Grid>
+                                <Grid item xs={12} sm={4}>
+                                    <TextField
+                                        autoFocus
+                                        margin="dense"
+                                        id="searchFollowerTF"
+                                        inputProps={{"data-testid": "searchFollower"}}
+                                        label="Search Followers"
+                                        value={this.state.searchFollower}
+                                        onChange={handleSearchFollower}
+                                        type="text"
+                                        fullWidth
+                                    />
+                                </Grid>
                             </Grid>
-                            <Grid item xs={12} sm={4}>
-                                <TextField
-                                    autoFocus
-                                    margin="dense"
-                                    id="searchFollowerTF"
-                                    label="Search Followers"
-                                    value={this.state.searchFollower}
-                                    onChange={handleSearchFollower}
-                                    type="text"
-                                    fullWidth
-                                />
-                            </Grid>
-                        </Grid>
-                        <Divider />
-                        {this.state.followers.length === 0 ? (
-                            <Grid item xs={12} className={classes.content}>
-                                <Typography>
-                                    You have no followers. Go check out more content, write stories, connect with people.
-                        </Typography>
-                            </Grid>
-                        ) : (
+                            <Divider />
+                            {this.state.followers.length === 0 ? (
+                                <Grid item xs={12} className={classes.content}>
+                                    <Typography data-testid={'none-follower'}>
+                                        You have no followers. Go check out more content, write stories, connect with people.
+                                    </Typography>
+                                </Grid>
+                            ) : (
 
-                                <Grid container xs={12} className={classes.box}>
+                                <Grid container className={classes.box} data-testid={'follower'}>
                                     {this.state.displayFollowers.map((follower) => {
 
                                         return (
-                                            <Grid item xs={12} sm={4}>
+                                            <Grid item xs={12} sm={4} key={follower._id}>
                                                 <Link href={"/user/" + follower._id} className={classes.link}>
                                                     <Container>
                                                         <Card elevation={3} Container className={classes.paper}>
                                                             <Grid container>
                                                                 <Grid item xs={12} style={{ display: 'flex', alignItems: 'center' }}>
                                                                     <Avatar alt={follower.name} src={follower.photo} style={{ display: 'inline-block' }} />
-                                                                    <Typography display="inline" variant="h6" style={{ display: 'inline-block', margin: 2 }}>{follower.name}</Typography>
-
+                                                                    <Typography display="inline" variant="h6" style={{ display: 'inline-block', margin: 2 }} data-testid={'follower-name'}>{follower.name}</Typography>
                                                                 </Grid>
-
                                                             </Grid>
                                                         </Card>
                                                     </Container>
@@ -290,33 +283,34 @@ class Connections extends React.Component {
                                     })}
                                 </Grid>
                             )}
-                        <Grid container xs={12} className={classes.title} justify='space-between'>
-                            <Grid item xs={12} sm={4}>
-                                {"Following (" + this.state.following.length + ")"}
+                            <Grid container className={classes.title} justify='space-between'>
+                                <Grid item xs={12} sm={4}>
+                                    {"Following (" + this.state.following.length + ")"}
+                                </Grid>
+                                <Grid item xs={12} sm={4}>
+                                    <TextField
+                                        autoFocus
+                                        margin="dense"
+                                        id="searchFollowingTF"
+                                        label="Search Following"
+                                        inputProps={{"data-testid": "searchFollowing"}}
+                                        value={this.state.searchFollowing}
+                                        onChange={handleSearchFollowing}
+                                        type="text"
+                                        fullWidth
+                                    />
+                                </Grid>
                             </Grid>
-                            <Grid item xs={12} sm={4}>
-                                <TextField
-                                    autoFocus
-                                    margin="dense"
-                                    id="searchFollowingTF"
-                                    label="Search Following"
-                                    value={this.state.searchFollowing}
-                                    onChange={handleSearchFollowing}
-                                    type="text"
-                                    fullWidth
-                                />
-                            </Grid>
-                        </Grid>
-                        <Divider />
-                        {this.state.following.length === 0 ? (
-                            <Grid item xs={12} className={classes.content}>
-                                <Typography>
-                                    You didn't follow anyone. Read people's stories, follow them and connect.
-                        </Typography>
-                            </Grid>
-                        ) : (
+                            <Divider />
+                            {this.state.following.length === 0 ? (
+                                <Grid item xs={12} className={classes.content}>
+                                    <Typography data-testid={'none-following'}>
+                                        You didn't follow anyone. Read people's stories, follow them and connect.
+                                    </Typography>
+                                </Grid>
+                            ) : (
 
-                                <Grid container xs={12} className={classes.box}>
+                                <Grid container className={classes.box} data-testid={'following'}>
                                     {this.state.displayFollowing.map((follower) => {
 
                                         return (
@@ -327,10 +321,8 @@ class Connections extends React.Component {
                                                             <Grid container>
                                                                 <Grid item xs={12} style={{ display: 'flex', alignItems: 'center' }}>
                                                                     <Avatar alt={follower.name} src={follower.photo} style={{ display: 'inline-block' }} />
-                                                                    <Typography display="inline" variant="h6" style={{ display: 'inline-block', margin: 2 }}>{follower.name}</Typography>
-
+                                                                    <Typography display="inline" variant="h6" style={{ display: 'inline-block', margin: 2 }} data-testid={'following-name'}>{follower.name}</Typography>
                                                                 </Grid>
-
                                                             </Grid>
                                                         </Card>
                                                     </Container>
@@ -340,10 +332,10 @@ class Connections extends React.Component {
                                     })}
                                 </Grid>
                             )}
-                    </Container>
-                )
-            }
-        </div>
+                        </Container>
+                    )
+                }
+            </div>
         );
     }
 }

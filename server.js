@@ -39,7 +39,7 @@ else
 
 // Use mongoose to connect to mongoDB
 mongoose
-  .connect(db)
+  .connect(db, {useUnifiedTopology: true, useNewUrlParser: true })
   .then(() => console.log("MongoDB connected successfully!"))
   .catch(err => console.log(err));
 
@@ -72,4 +72,6 @@ if (env === "production") {
 
 const port = process.env.PORT || 5000;
 
-app.listen(port, () => console.log(`App running on port ${port}`));
+const server = app.listen(port, () => console.log(`App running on port ${port}`));
+
+module.exports =  server ;

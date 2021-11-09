@@ -10,10 +10,7 @@ import Typography from "@material-ui/core/Typography";
 import Divider from "@material-ui/core/Divider";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Card from "@material-ui/core/Card";
-import Button from "@material-ui/core/Button";
-import Chip from "@material-ui/core/Chip";
 import Link from "@material-ui/core/Link";
-import TextField from "@material-ui/core/TextField";
 
 import { setCurrentUser } from "../../actions/authActions";
 
@@ -383,7 +380,6 @@ class Search extends React.Component {
                         </Container>
                       )
                   ) : (
-
                       <Grid className={classes.extraHeight} item xs={12}>
                         Users cannot be searched as a Guest Login.
                       </Grid>

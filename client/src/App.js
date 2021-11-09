@@ -40,7 +40,6 @@ function App() {
             <div className="App">
               <XPertNavbar />
               <Switch>
-
                 <Route exact path="/" component={Landing}  />
                 <Route exact path="/profile/" component={Profile} />
                 <Route exact path="/tags/:id" component={TagSearch} />

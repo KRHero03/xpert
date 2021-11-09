@@ -180,17 +180,13 @@ class XPertNavbar extends React.Component {
       openHelp: false,
       search: "",
     }
-
   }
-
-
 
   render() {
 
     const { isAuthenticated, user } = this.props.auth;
     const { classes } = this.props;
     const preventDefault = (event) => event.preventDefault();
-
 
     const toggleDrawer = () => {
       this.setState({
@@ -208,6 +204,7 @@ class XPertNavbar extends React.Component {
         openPolicy: !this.state.openPolicy,
       })
     }
+
     const handleHelpModal = (event, reason) => {
       if (reason === 'clickaway') {
         return
@@ -223,13 +220,14 @@ class XPertNavbar extends React.Component {
         search: e.target.value
       })
     }
-    const handleSearch = (e) => {
 
+    const handleSearch = (e) => {
       if (e.key === 'Enter') {
         this.props.history.push('/search/' + this.state.search)
         return
       }
     }
+
     const guestIcons = (
       <div className={classes.sectionDesktop}>
         <Button component="a" href='/' color="secondary" >
@@ -240,7 +238,7 @@ class XPertNavbar extends React.Component {
         		</Button>
         <Button component="a" href='/auth/google' variant="contained" color="secondary" disableElevation>
           Get Started
-        		</Button>
+        </Button>
       </div>
     )
 
@@ -346,7 +344,6 @@ class XPertNavbar extends React.Component {
               <ListItemText secondary="Privacy Policy | X-Pert" />
             </ListItem>
 
-
             <Dialog class={classes.dialog}
               aria-describedby="alert-dialog-description" onClose={handlePolicyModal} open={this.state.openPolicy}>
 
@@ -364,7 +361,6 @@ class XPertNavbar extends React.Component {
       </div>
 
     )
-
 
     return (
 

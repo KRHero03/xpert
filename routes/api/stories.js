@@ -7,7 +7,6 @@ const upvotes = require("../../models/upvotes");
 const users = require("../../models/user");
 module.exports = app => {
     app.post('/api/get_story_by_userid', async (req, res) => {
-
         try{
             const userID = req.body.userID
             const storyResponse = await stories.find({ authorID: userID })
@@ -265,7 +264,6 @@ module.exports = app => {
                 response.users = []
             }
 
-
             const storiesResponse = await stories.find({'title':{'$regex': searchParam,'$options':'i'}})
             let storyResponseFinal = []            
             await Promise.all(storiesResponse.map(async (story)=>{
@@ -276,7 +274,6 @@ module.exports = app => {
                 storyResponseFinal.push(storyObj)
             }))
             response.stories = storyResponseFinal
-
 
             const tagsResponse = await tags.find({'name':{'$regex': searchParam,'$options':'i'}})
             let tagStories = []

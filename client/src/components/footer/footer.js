@@ -80,44 +80,44 @@ class Footer extends React.Component {
     }
     const { classes } = this.props;
     return (
-      <footer className={classes.base}>
+        <footer className={classes.base}>
 
-    <div class="row grey-blue">
-    </div>
-        <Grid container>
-          <Grid container justify="center">
-            <Grid item>
-              <div style={{margin: 5,fontSize: 14}} >
-                <Link target="_blank" href="https://twitter.com" ><Twitter className={classes.icon} /></Link>
-                <Link  target="_blank" href="https://facebook.com" ><Facebook className={classes.icon} /></Link>
-                <Link target="_blank" href="https://instagram.com" ><Instagram className={classes.icon} /></Link>
-                <Link  target="_blank" href="https://linkedin.com" ><LinkedIn className={classes.icon} /></Link>
-              </div>
+          <div class="row grey-blue">
+          </div>
+          <Grid container>
+            <Grid container justify="center">
+              <Grid item>
+                <div style={{margin: 5,fontSize: 14}} >
+                  <Link target="_blank" href="https://twitter.com" ><Twitter className={classes.icon} /></Link>
+                  <Link  target="_blank" href="https://facebook.com" ><Facebook className={classes.icon} /></Link>
+                  <Link target="_blank" href="https://instagram.com" ><Instagram className={classes.icon} /></Link>
+                  <Link  target="_blank" href="https://linkedin.com" ><LinkedIn className={classes.icon} /></Link>
+                </div>
+              </Grid>
+            </Grid>
+            <Divider />
+            <Grid container justify="center">
+              <Grid item >
+                <Typography className={classes.textSecondary}>© Copyright 2020 - Present </Typography>
+
+                <ListItem onClick={handlePolicyModal} component="a" href="#" key="Privacy Policy">
+                  <ListItemText><div className={classes.textSecondary}>Privacy Policy | X-Pert</div></ListItemText>
+                </ListItem>
+                <Dialog class={classes.dialog}
+                        aria-describedby="alert-dialog-description" onClose={handlePolicyModal}  open={this.state.openPolicy}>
+
+                  <DialogContent>
+                    <div className={classes.paper}>
+                      <h2 id="transition-modal-title">XPert</h2>
+
+                      <span dangerouslySetInnerHTML={template} />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </Grid>
             </Grid>
           </Grid>
-          <Divider />
-          <Grid container justify="center">
-            <Grid item >
-              <Typography className={classes.textSecondary}>© Copyright 2020 - Present </Typography>
-
-              <ListItem onClick={handlePolicyModal} component="a" href="#" key="Privacy Policy">
-                <ListItemText><div className={classes.textSecondary}>Privacy Policy | X-Pert</div></ListItemText>
-              </ListItem>
-              <Dialog class={classes.dialog} 
-        aria-describedby="alert-dialog-description" onClose={handlePolicyModal}  open={this.state.openPolicy}>
-
-        <DialogContent>
-        <div className={classes.paper}>
-                                    <h2 id="transition-modal-title">XPert</h2>
-
-                                    <span dangerouslySetInnerHTML={template} />
-                                </div>
-        </DialogContent>
-                        </Dialog>
-            </Grid>
-          </Grid>
-        </Grid>
-      </footer>
+        </footer>
     );
   }
 }

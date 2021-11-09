@@ -2,7 +2,6 @@ import React from "react";
 import { connect } from "react-redux";
 import { withStyles } from '@material-ui/core/styles';
 import Proptypes from 'prop-types';
-import axios from 'axios';
 import Container from "@material-ui/core/Container";
 import Snackbar from '@material-ui/core/Snackbar';
 import LinearProgress from "@material-ui/core/LinearProgress";
@@ -15,7 +14,6 @@ import Button from "@material-ui/core/Button";
 import Chip from "@material-ui/core/Chip";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
-import Link from "@material-ui/core/Link";
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import KeyboardArrowUp from '@material-ui/icons/KeyboardArrowUp';
@@ -25,13 +23,14 @@ import Fab from '@material-ui/core/Fab';
 import Fade from '@material-ui/core/Fade';
 
 import { setCurrentUser } from "../../actions/authActions";
-import { CircularProgress, Icon, Portal } from "@material-ui/core";
+import { CircularProgress, Portal } from "@material-ui/core";
+import * as api from '../../services/api'
+import moment from "moment";
 
 const styles = (theme) => ({
   paper: {
     display: 'flex',
     padding: theme.spacing(1),
-    textAlign: 'center',
     color: theme.palette.text.primary,
     margin: 10,
     transition: 'all 0.2s',
@@ -40,7 +39,6 @@ const styles = (theme) => ({
     '&:hover': {
       transform: 'scale(1.01)'
     },
-
   },
   base: {
     minHeight: '90vh',
@@ -213,19 +211,20 @@ class Story extends React.Component {
       isAuthenticated: this.props.auth.isAuthenticated
     })
 
-    const storyResponse = await axios.post('/api/get_story', { 'storyID': this.state.storyID })
-    if (Object.keys(storyResponse.data).length===0) {
+    const storyResponse = await api.getStory(this.state.storyID)
+    if (Object.keys(storyResponse).length===0) {
       this.props.history.push('/')
       return
     }
 
     this.setState({
-      story: storyResponse.data,
-      upvotes: storyResponse.data.upvotes,
+      story: storyResponse,
+      upvotes: storyResponse.upvotes,
     })
-    const authorResponse = await axios.post('/api/user_details', { 'userID': this.state.story.authorID })
+    const authorResponse = await api.getAuthorDetails(this.state.story.authorID);
+
     this.setState({
-      authorDetails: authorResponse.data
+      authorDetails: authorResponse
     })
 
     if (this.state.user._id == this.state.authorDetails._id) {
@@ -233,24 +232,24 @@ class Story extends React.Component {
         isAuthorUser: true
       })
     }
-    const followedResponse = await axios.post('/api/check_followed', { 'userID1': this.state.user._id, 'userID2': this.state.authorDetails._id })
+    const followedResponse = await api.checkFollowed(this.state.user._id, this.state.authorDetails._id)
 
     this.setState({
-      followed: followedResponse.data
+      followed: followedResponse
     })
 
-    const upvotedResponse = await axios.post('/api/check_upvoted', { 'userID': this.state.user._id, 'storyID': this.state.storyID })
+    const upvotedResponse = await api.checkUpvoted(this.state.storyID, this.state.user._id);
 
     this.setState({
-      upvoted: upvotedResponse.data
+      upvoted: upvotedResponse
     })
-
 
     await Promise.all(this.state.story.comments.map(async (commentObj) => {
       const commentID = commentObj.id
-      const commentResponse = await axios.post('/api/get_comment', { 'commentID': commentID })
+      const commentResponse = await api.getComment(commentID);
+
       this.setState({
-        comments: [...this.state.comments, commentResponse.data]
+        comments: [...this.state.comments, commentResponse]
       })
     }))
 
@@ -259,22 +258,21 @@ class Story extends React.Component {
     comments.sort((a, b) => {
       return new Date(b.comment.timestamp) - new Date(a.comment.timestamp);
     })
+
     this.setState({
       comments: comments
     })
     
     await Promise.all(this.state.story.tags.map(async (tagObj) => {
       const tagID = tagObj.id
-      const tagResponse = await axios.post('/api/get_tag', { 'id': tagID })
+      const tagResponse = await api.getTagData(tagID);
       this.setState({
-        tags: [...this.state.tags, tagResponse.data]
+        tags: [...this.state.tags, tagResponse]
       })
     }))
-
     this.setState({
       isLoading: false
     })
-
   }
 
 
@@ -286,15 +284,14 @@ class Story extends React.Component {
         isFollowedClicked: true
       })
       if (this.state.followed) {
-        await axios.post('/api/remove_followed', { 'userID1': this.state.user._id, 'userID2': this.state.authorDetails._id })
+        await api.removeFollowed(this.state.user._id, this.state.authorDetails._id)
 
         this.setState({
           followed: false
         })
         showMessage("Unfollowed " + this.state.authorDetails.name + ".")
       } else {
-
-        await axios.post('/api/add_followed', { 'userID1': this.state.user._id, 'userID2': this.state.authorDetails._id })
+        await api.addFollowed(this.state.user._id, this.state.authorDetails._id);
 
         this.setState({
           followed: true
@@ -321,6 +318,7 @@ class Story extends React.Component {
         openSnackbar: !this.state.openSnackbar
       })
     }
+
     const handleMenu = (event, reason) => {
       if (reason === 'clickaway') {
         return;
@@ -338,14 +336,16 @@ class Story extends React.Component {
         openSnackbar: true,
       })
     }
+
     const addComment = async () => {
       this.setState({
         isAddCommentClicked: true
       })
+
       if (this.state.commentData.length > 0) {
-        const response = await axios.post('/api/add_comment', { 'userID': this.state.user._id, 'commentData': this.state.commentData, 'storyID': this.state.storyID })
+        const response = await api.addComment(this.state.user._id, this.state.commentData, this.state.storyID)
         let comments = this.state.comments
-        comments.push(response.data)
+        comments.push(response)
 
         comments.sort((a, b) => {
           return new Date(b.comment.timestamp) - new Date(a.comment.timestamp);
@@ -357,10 +357,10 @@ class Story extends React.Component {
       } else {
         showMessage("Please enter a valid comment.")
       }
+
       this.setState({
         isAddCommentClicked: false
       })
-
     }
 
     const toggleUpvoted = async () => {
@@ -368,22 +368,20 @@ class Story extends React.Component {
         isUpvoteClicked: true,
       })
       if (this.state.upvoted) {
-        await axios.post('/api/remove_upvote', { 'userID': this.state.user._id, 'storyID': this.state.storyID })
+        await api.removeUpvoted(this.state.user._id,this.state.storyID)
         this.setState({
           upvoted: false,
           upvotes: this.state.upvotes - 1,
         })
         showMessage("Removed upvote from \"" + this.state.story.title + "\".")
       } else {
-
-        await axios.post('/api/add_upvote', { 'userID': this.state.user._id, 'storyID': this.state.storyID })
+        await api.addUpvote(this.state.user._id, this.state.storyID);
         this.setState({
           upvoted: true,
           upvotes: this.state.upvotes + 1,
           snackbarText: "Story Upvoted!",
         })
         showMessage("Upvoted \"" + this.state.story.title + "\".")
-
       }
       this.setState({
         isUpvoteClicked: false,
@@ -391,57 +389,42 @@ class Story extends React.Component {
     }
 
     const editStory = () => {
-
       this.props.history.push('/editstory/'+this.state.storyID)
-      return
     }
 
     const deleteStory = async () => {
-      
-      await axios.post('/api/delete_story',{'storyID':this.state.storyID})
+      await api.removeStory(this.state.storyID);
       showMessage("Deleted your Story!")
       this.props.history.push('/yourstories/')
-      return
-    }
-
-    const formatDate = (date) => {
-      const d = new Date(date)
-      const ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(d);
-      const mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(d);
-      const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(d);
-      const displayDate = `${mo} ${da}, ${ye}`
-      return displayDate
     }
 
     return (
       <div>
 
         {this.state.isLoading ? (
-
           <Container className={classes.base}>
             <LinearProgress />
           </Container>
         ) :
           (
             <Container className={classes.base}>
-              
               <Grid container xs={12} justify="space-between">
                 <Grid item xs={12} className={classes.title}>
                   {this.state.story.title}
                 </Grid>
               </Grid>
-                
-              
+
               <Grid item xs={12} className={classes.author}>
                 <a href={'/user/' + this.state.authorDetails._id} >
                   <Avatar alt={this.state.authorDetails.name} src={this.state.authorDetails.photo} style={{ display: 'inline-block' }} />
                 </a>
                 <div style={{ marginLeft: 10 }}>
-
-                  <a href={'/user/' + this.state.authorDetails._id} className={classes.link}><Typography color="textSecondary">{this.state.authorDetails.name}</Typography></a>
-                  <Typography color="textSecondary">{
-                    formatDate(this.state.story.timestamp)
-                  }</Typography>
+                  <a href={'/user/' + this.state.authorDetails._id} className={classes.link}>
+                    <Typography color="textSecondary" data-testid={'author-name'}>{this.state.authorDetails.name}</Typography>
+                  </a>
+                  <Typography color="textSecondary" data-testid={'story-date'}>
+                    {moment(this.state.story.timestamp).format('MMM DD, YYYY')}
+                  </Typography>
                 </div>
                 {this.state.isAuthenticated ?
                   this.state.isAuthorUser ? (null) :
@@ -450,20 +433,19 @@ class Story extends React.Component {
                     ) : (
                         this.state.followed ?
                           (
-
                             <Button style={{ marginLeft: 10 }} onClick={toggleFollowed} color="primary" variant="contained">
                               Followed
                             </Button>
                           ) :
                           (
-
                             <Button style={{ marginLeft: 10 }} onClick={toggleFollowed} color="primary" variant="outlined">
                               Follow
-                            </Button>
+                           </Button>
                           )
                       )
                   :
-                  (null)}
+                  (null)
+                }
               </Grid>
               <Grid item xs={12} className={classes.description}>
                 <Typography color="textSecondary">
@@ -473,8 +455,7 @@ class Story extends React.Component {
               <Divider className={classes.divider} />
               <Grid item xs={12} className={classes.content}>
                 <ReactMarkdown plugins={[gfm]} className={classes.previewBox}>
-
-                  {this.state.story.content}
+                    {this.state.story.content}
                 </ReactMarkdown>
               </Grid>
               <Divider className={classes.divider} />
@@ -513,8 +494,8 @@ class Story extends React.Component {
               </Grid>
 
               <Grid item xs={12} className={classes.description}>
-                <Typography color="textSecondary">{this.state.upvotes + " Upvotes"}</Typography>
-                <Typography color="textSecondary">{this.state.story.views + " Views"}</Typography>
+                <Typography color="textSecondary" data-testid='upvotes'>{this.state.upvotes + " Upvotes"}</Typography>
+                <Typography color="textSecondary" data-testid='views'>{this.state.story.views + " Views"}</Typography>
               </Grid>
               <Grid item xs={12} className={classes.commentBase}>
                 <Typography variant="h5">Comments</Typography>
@@ -526,23 +507,20 @@ class Story extends React.Component {
                         <Grid item xs={12} className={classes.comment}>
                           <a href={'/user/' + comment.author._id} className={classes.link}>
                             <Grid item xs={12} className={classes.author}>
-
-                              <Avatar alt={comment.author.name} src={comment.author.photo} style={{ display: 'inline-block' }} />
+                              <Avatar alt={comment.author.name} src={comment.author.photo} data-testid={'comment-avatar'} style={{ display: 'inline-block' }} />
                               <div style={{ marginLeft: 10 }}>
-                                <Typography >{comment.author.name}</Typography>
-                                <Typography >{formatDate(comment.comment.timestamp)}</Typography>
+                                <Typography data-testid = 'comment-author-name'>{comment.author.name}</Typography>
+                                <Typography data-testid = 'comment-date'>{moment(comment.comment.timestamp).format('MMM DD, YYYY')}</Typography>
                               </div>
                             </Grid>
                           </a>
-
                           {
                             this.state.user._id == comment.author._id ?
                               (
-
-                                <Button id={comment.comment._id} onClick={async e => {
+                                <Button id={comment.comment._id} data-testid={'comment-delete-btn'} onClick={async e => {
                                   const commentID = comment.comment._id
                                   let comments = this.state.comments
-                                  await axios.post('/api/delete_comment', { 'commentID': commentID, 'storyID': this.state.storyID })
+                                  await api.removeComment(commentID, this.state.storyID)
                                   comments.splice(comments.findIndex(e => e.comment._id == commentID), 1)
                                   showMessage('Deleted your comment.')
                                 }} color="primary" variant="contained">
@@ -565,7 +543,6 @@ class Story extends React.Component {
                 </Grid>
                 {this.state.isAuthenticated ?
                   (
-
                     <Grid item xs={12} className={classes.commentButton}>
                       <TextField
                         autoFocus
@@ -581,7 +558,7 @@ class Story extends React.Component {
                       />
                       {this.state.isAddCommentClicked ? (<CircularProgress />) :
                         (
-                          <Button color="primary" variant="outlined" onClick={addComment}>
+                          <Button color="primary" variant="outlined" data-testid={'comment-add-btn'} onClick={addComment}>
                             Add Comment
                           </Button>
                         )}
@@ -642,7 +619,6 @@ class Story extends React.Component {
     );
   }
 }
-
 
 const mapStateToProps = state => ({
   auth: state.auth

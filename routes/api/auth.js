@@ -1,14 +1,10 @@
 const passport = require("passport");
-const express = require("express");
-const app = express();
 
 module.exports = app => {
   app.get("/auth/test", (req, res) => {
     res.send("Auth Working properly");
   });
-  app.get(
-    "/auth/google",
-    passport.authenticate("google", {
+  app.get("/auth/google", passport.authenticate("google", {
       scope: [
         "https://www.googleapis.com/auth/userinfo.profile",
         "https://www.googleapis.com/auth/userinfo.email"
@@ -16,9 +12,7 @@ module.exports = app => {
     })
   );
 
-  app.get(
-    "/auth/google/callback",
-    passport.authenticate("google"),
+  app.get("/auth/google/callback", passport.authenticate("google"),
     (req, res) => {
       res.redirect("/profile/");
     }

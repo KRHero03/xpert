@@ -18,7 +18,6 @@ const styles = (theme) => ({
   paper: {
     display: 'flex',
     padding: theme.spacing(1),
-    textAlign: 'center',
     color: theme.palette.text.primary,
     margin: 10,
     transition: 'all 0.2s',
